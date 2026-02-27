@@ -1,0 +1,1749 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cat Gacha</title>
+    <meta name="theme-color" content="#ff9d76">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <style>
+      :root {
+        --color-bg: #fef9f3;
+        --color-surface: #ffffff;
+        --color-text: #2d2d2d;
+        --color-text-light: #666;
+        --color-primary: #ff9d76;
+        --color-primary-dark: #ff7043;
+        --color-secondary: #4ecdc4;
+        --color-common: #94a3b8;
+        --color-rare: #60a5fa;
+        --color-epic: #a78bfa;
+        --color-legendary: #fbbf24;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.12);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: var(--color-bg);
+        color: var(--color-text);
+        line-height: 1.6;
+        overflow-x: hidden;
+      }
+
+      .app-container {
+        max-width: 480px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: var(--color-surface);
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.05);
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* Header */
+      .header {
+        background: linear-gradient(
+          135deg,
+          var(--color-primary),
+          var(--color-primary-dark)
+        );
+        color: white;
+        padding: 20px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+
+      .header h1 {
+        font-size: 24px;
+        margin-bottom: 12px;
+      }
+
+      .currency-bar {
+        display: flex;
+        justify-content: center;
+        gap: 24px;
+        margin-top: 12px;
+      }
+
+      .currency-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255, 255, 255, 0.2);
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-weight: 600;
+      }
+
+      .currency-icon {
+        font-size: 20px;
+      }
+
+      /* Content */
+      .content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      /* Navigation */
+      .nav-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .nav-btn {
+        background: var(--color-surface);
+        border: 2px solid #e2e8f0;
+        padding: 16px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow);
+      }
+
+      .nav-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .nav-btn.active {
+        border-color: var(--color-primary);
+        background: linear-gradient(
+          135deg,
+          rgba(255, 157, 118, 0.1),
+          rgba(255, 112, 67, 0.1)
+        );
+      }
+
+      /* Daily Reward Card */
+      .daily-reward {
+        background: linear-gradient(135deg, #fff7ed, #ffedd5);
+        border: 2px solid var(--color-legendary);
+        padding: 20px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow);
+      }
+
+      .daily-reward h3 {
+        margin-bottom: 12px;
+        color: var(--color-text);
+      }
+
+      .daily-reward-btn {
+        background: var(--color-legendary);
+        color: var(--color-text);
+        border: none;
+        padding: 12px 32px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .daily-reward-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .daily-reward-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Gacha Screen */
+      .gacha-container {
+        text-align: center;
+      }
+
+      .gacha-box {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        padding: 40px 20px;
+        border-radius: 16px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow-lg);
+      }
+
+      .gacha-box h2 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+
+      .gacha-box-inner {
+        position: relative;
+        margin-top: 24px;
+      }
+
+      .gacha-crate {
+        width: 140px;
+        height: 100px;
+        margin: 0 auto;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #f97316, #fb923c);
+        box-shadow: var(--shadow-lg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 40px;
+        color: #fff7ed;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .gacha-crate::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+      }
+
+      .gacha-box.shaking .gacha-crate {
+        animation: crateShake 0.5s ease;
+      }
+
+      @keyframes crateShake {
+        0% {
+          transform: translateX(0);
+        }
+        15% {
+          transform: translateX(-4px) rotate(-1deg);
+        }
+        30% {
+          transform: translateX(4px) rotate(1deg);
+        }
+        45% {
+          transform: translateX(-3px) rotate(-0.5deg);
+        }
+        60% {
+          transform: translateX(3px) rotate(0.5deg);
+        }
+        75% {
+          transform: translateX(-2px);
+        }
+        100% {
+          transform: translateX(0);
+        }
+      }
+
+      .pull-beam {
+        position: absolute;
+        left: 50%;
+        top: -140px;
+        transform: translateX(-50%);
+        width: 70px;
+        height: 200px;
+        border-radius: 999px;
+        opacity: 0;
+        filter: blur(4px);
+        pointer-events: none;
+      }
+
+      .gacha-box.beaming .pull-beam {
+        animation: beamRise 0.6s ease-out forwards;
+      }
+
+      @keyframes beamRise {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, 20px) scaleY(0.4);
+        }
+        50% {
+          opacity: 1;
+          transform: translate(-50%, 0) scaleY(1);
+        }
+        100% {
+          opacity: 0.1;
+          transform: translate(-50%, -10px) scaleY(1.1);
+        }
+      }
+
+      .pull-card-reveal {
+        animation: cardReveal 0.35s ease forwards;
+        transform-origin: center;
+        opacity: 0;
+        transform: scale(0.85) rotateY(10deg);
+      }
+
+      @keyframes cardReveal {
+        0% {
+          opacity: 0;
+          transform: scale(0.85) rotateY(10deg);
+        }
+        60% {
+          opacity: 1;
+          transform: scale(1.03) rotateY(0deg);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) rotateY(0deg);
+        }
+      }
+
+      .pull-card-hidden {
+        opacity: 0;
+        transform: scale(0.9);
+      }
+
+      .gacha-buttons {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        margin-top: 24px;
+      }
+
+      .pull-btn {
+        background: var(--color-primary);
+        color: white;
+        border: none;
+        padding: 16px 32px;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: var(--shadow);
+      }
+
+      .pull-btn:hover {
+        background: var(--color-primary-dark);
+        transform: translateY(-2px);
+      }
+
+      .pull-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .pull-btn span {
+        display: block;
+        font-size: 12px;
+        opacity: 0.9;
+        margin-top: 4px;
+      }
+
+      .rates {
+        background: var(--color-surface);
+        padding: 16px;
+        border-radius: 12px;
+        text-align: left;
+        margin-top: 20px;
+        box-shadow: var(--shadow);
+      }
+
+      .rates h4 {
+        margin-bottom: 12px;
+      }
+
+      .rate-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+      }
+
+      /* Collection Screen */
+      .filters {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+        overflow-x: auto;
+        padding-bottom: 8px;
+      }
+
+      .filter-btn {
+        background: var(--color-surface);
+        border: 2px solid #e2e8f0;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: all 0.2s;
+      }
+
+      .filter-btn.active {
+        border-color: var(--color-primary);
+        background: var(--color-primary);
+        color: white;
+      }
+
+      .collection-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+
+      .cat-card {
+        background: var(--color-surface);
+        border-radius: 12px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        cursor: pointer;
+        transition: all 0.2s;
+        position: relative;
+        border: 2px solid transparent;
+      }
+
+      .cat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .cat-card.new::after {
+        content: 'NOVO!';
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        background: #ef4444;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .cat-placeholder {
+        width: 100%;
+        height: 120px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 48px;
+      }
+
+      .cat-card.common .cat-placeholder {
+        background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+      }
+      .cat-card.rare .cat-placeholder {
+        background: linear-gradient(135deg, #dbeafe, #93c5fd);
+      }
+      .cat-card.epic .cat-placeholder {
+        background: linear-gradient(135deg, #ede9fe, #c4b5fd);
+      }
+      .cat-card.legendary .cat-placeholder {
+        background: linear-gradient(135deg, #fef3c7, #fde047);
+      }
+
+      .cat-card h4 {
+        font-size: 14px;
+        margin-bottom: 4px;
+      }
+
+      .cat-card .variant {
+        font-size: 12px;
+        color: var(--color-text-light);
+        margin-bottom: 8px;
+      }
+
+      .rarity-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+      }
+
+      .rarity-badge.common {
+        background: var(--color-common);
+        color: white;
+      }
+      .rarity-badge.rare {
+        background: var(--color-rare);
+        color: white;
+      }
+      .rarity-badge.epic {
+        background: var(--color-epic);
+        color: white;
+      }
+      .rarity-badge.legendary {
+        background: var(--color-legendary);
+        color: var(--color-text);
+      }
+
+      .favorite-btn {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(255, 255, 255, 0.9);
+        border: none;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: var(--color-surface);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 400px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        animation: scaleIn 0.3s ease;
+      }
+
+      @keyframes scaleIn {
+        from {
+          transform: scale(0.8);
+          opacity: 0;
+        }
+        to {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--color-text-light);
+      }
+
+      .pull-results {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      /* Shop Screen */
+      .shop-section {
+        margin-bottom: 32px;
+      }
+
+      .shop-section h3 {
+        margin-bottom: 16px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e2e8f0;
+      }
+
+      .shop-items {
+        display: grid;
+        gap: 12px;
+      }
+
+      .shop-item {
+        background: var(--color-surface);
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+      }
+
+      .shop-item-info h4 {
+        margin-bottom: 4px;
+      }
+
+      .shop-item-cost {
+        color: var(--color-text-light);
+        font-size: 14px;
+      }
+
+      .shop-buy-btn {
+        background: var(--color-secondary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .shop-buy-btn:hover {
+        transform: scale(1.05);
+      }
+
+      .shop-buy-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Profile Screen */
+      .profile-section {
+        background: var(--color-surface);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .profile-section h3 {
+        margin-bottom: 16px;
+      }
+
+      .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+      }
+
+      .setting-item:last-child {
+        border-bottom: none;
+      }
+
+      .toggle {
+        position: relative;
+        width: 50px;
+        height: 28px;
+        background: #cbd5e1;
+        border-radius: 14px;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+
+      .toggle.active {
+        background: var(--color-secondary);
+      }
+
+      .toggle::after {
+        content: '';
+        position: absolute;
+        top: 4px;
+        left: 4px;
+        width: 20px;
+        height: 20px;
+        background: white;
+        border-radius: 50%;
+        transition: all 0.3s;
+      }
+
+      .toggle.active::after {
+        left: 26px;
+      }
+
+      .danger-btn {
+        background: #ef4444;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 12px;
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--color-text-light);
+      }
+
+      .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 16px;
+      }
+
+      /* History */
+      .history-list {
+        margin-top: 20px;
+      }
+
+      .history-item {
+        background: var(--color-surface);
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow);
+      }
+
+      .history-item-info {
+        flex: 1;
+      }
+
+      .history-item-time {
+        font-size: 12px;
+        color: var(--color-text-light);
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
+        .app-container {
+          max-width: 100%;
+        }
+
+        .collection-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      /* Cat Detail Modal */
+      .cat-detail {
+        text-align: center;
+      }
+
+      .cat-detail .cat-placeholder {
+        width: 200px;
+        height: 200px;
+        margin: 0 auto 20px;
+        font-size: 80px;
+      }
+
+      .detail-stats {
+        text-align: left;
+        margin-top: 20px;
+      }
+
+      .detail-stat {
+        padding: 12px 0;
+        border-bottom: 1px solid #e2e8f0;
+        display: flex;
+        justify-content: space-between;
+      }
+
+      .detail-stat:last-child {
+        border-bottom: none;
+      }
+
+      .detail-stat label {
+        color: var(--color-text-light);
+      }
+
+      .detail-stat value {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header -->
+      <div class="header">
+        <h1>🐱 Cat Gacha</h1>
+        <div class="currency-bar">
+          <div class="currency-item">
+            <span class="currency-icon">🐟</span>
+            <span id="fish-count">2000</span>
+          </div>
+          <div class="currency-item">
+            <span class="currency-icon">🐾</span>
+            <span id="paws-count">0</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="content">
+        <!-- Home Screen -->
+        <div id="home-screen">
+          <div class="daily-reward">
+            <h3>🎁 Recompensa Diária</h3>
+            <p>+500 🐟 Fish</p>
+            <button class="daily-reward-btn" id="claim-daily">Coletar</button>
+          </div>
+
+          <div class="nav-buttons">
+            <button class="nav-btn" onclick="showScreen('gacha')">
+              📦 Caixa de Adoção
+            </button>
+            <button class="nav-btn" onclick="showScreen('collection')">
+              📚 Coleção
+            </button>
+            <button class="nav-btn" onclick="showScreen('shop')">
+              🛒 Loja
+            </button>
+            <button class="nav-btn" onclick="showScreen('profile')">
+              ⚙️ Perfil
+            </button>
+          </div>
+
+          <div class="profile-section">
+            <h3>📊 Estatísticas</h3>
+            <div class="detail-stats">
+              <div class="detail-stat">
+                <label>Gatos coletados:</label>
+                <value id="total-cats">0</value>
+              </div>
+              <div class="detail-stat">
+                <label>Pulls realizados:</label>
+                <value id="total-pulls">0</value>
+              </div>
+              <div class="detail-stat">
+                <label>Pity counter:</label>
+                <value id="pity-display">0/50</value>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gacha Screen -->
+        <div id="gacha-screen" class="hidden">
+          <button
+            class="nav-btn"
+            onclick="showScreen('home')"
+            style="margin-bottom: 20px"
+          >
+            ← Voltar
+          </button>
+
+          <div class="gacha-box">
+            <h2>📦 Caixa de Adoção</h2>
+            <p>Adote gatos de raças raras!</p>
+
+            <div class="gacha-box-inner">
+              <div class="pull-beam" id="pull-beam"></div>
+              <div class="gacha-crate">🐱</div>
+            </div>
+
+            <div class="gacha-buttons">
+              <button class="pull-btn" id="pull-1x">
+                Pull 1x
+                <span>200 🐟</span>
+              </button>
+              <button class="pull-btn" id="pull-10x">
+                Pull 10x
+                <span>1800 🐟</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="rates">
+            <h4>📊 Taxas de Raridade</h4>
+            <div class="rate-item">
+              <span>Common (Comum)</span>
+              <span>70%</span>
+            </div>
+            <div class="rate-item">
+              <span>Rare (Raro)</span>
+              <span>20%</span>
+            </div>
+            <div class="rate-item">
+              <span>Epic (Épico)</span>
+              <span>9%</span>
+            </div>
+            <div class="rate-item">
+              <span>Legendary (Lendário)</span>
+              <span>1%</span>
+            </div>
+            <p
+              style="
+                margin-top: 12px;
+                font-size: 14px;
+                color: var(--color-text-light);
+              "
+            >
+              ⭐ Pull 10x garante pelo menos 1 Rare ou melhor<br />
+              ⭐ A cada 50 pulls sem Legendary, o próximo é garantido
+            </p>
+          </div>
+
+          <div class="history-list" id="history-list">
+            <h4 style="margin-bottom: 12px">📜 Histórico (últimos 20)</h4>
+          </div>
+        </div>
+
+        <!-- Collection Screen -->
+        <div id="collection-screen" class="hidden">
+          <button
+            class="nav-btn"
+            onclick="showScreen('home')"
+            style="margin-bottom: 20px"
+          >
+            ← Voltar
+          </button>
+
+          <div class="filters" id="filters">
+            <button class="filter-btn active" data-filter="all">Todos</button>
+            <button class="filter-btn" data-filter="common">Common</button>
+            <button class="filter-btn" data-filter="rare">Rare</button>
+            <button class="filter-btn" data-filter="epic">Epic</button>
+            <button class="filter-btn" data-filter="legendary">
+              Legendary
+            </button>
+            <button class="filter-btn" data-filter="favorites">
+              ❤️ Favoritos
+            </button>
+          </div>
+
+          <div class="collection-grid" id="collection-grid">
+            <!-- Cat cards will be inserted here -->
+          </div>
+
+          <div class="empty-state hidden" id="empty-collection">
+            <div class="empty-state-icon">📭</div>
+            <p>Nenhum gato na coleção ainda.</p>
+            <p>Faça pulls na Caixa de Adoção!</p>
+          </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="shop-screen" class="hidden">
+          <button
+            class="nav-btn"
+            onclick="showScreen('home')"
+            style="margin-bottom: 20px"
+          >
+            ← Voltar
+          </button>
+
+          <div class="shop-section">
+            <h3>🐟 Pacotes de Fish (Simulado)</h3>
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="shop-item-info">
+                  <h4>Pacote Pequeno</h4>
+                  <p class="shop-item-cost">R$ 4,90 (simulado)</p>
+                </div>
+                <button
+                  class="shop-buy-btn"
+                  onclick="alert('Compra simulada: +500 Fish')"
+                >
+                  +500 🐟
+                </button>
+              </div>
+              <div class="shop-item">
+                <div class="shop-item-info">
+                  <h4>Pacote Médio</h4>
+                  <p class="shop-item-cost">R$ 9,90 (simulado)</p>
+                </div>
+                <button
+                  class="shop-buy-btn"
+                  onclick="alert('Compra simulada: +1200 Fish')"
+                >
+                  +1200 🐟
+                </button>
+              </div>
+              <div class="shop-item">
+                <div class="shop-item-info">
+                  <h4>Pacote Grande</h4>
+                  <p class="shop-item-cost">R$ 19,90 (simulado)</p>
+                </div>
+                <button
+                  class="shop-buy-btn"
+                  onclick="alert('Compra simulada: +3000 Fish')"
+                >
+                  +3000 🐟
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="shop-section">
+            <h3>🐾 Cosméticos</h3>
+            <div class="shop-items">
+              <div class="shop-item">
+                <div class="shop-item-info">
+                  <h4>Moldura Dourada</h4>
+                  <p class="shop-item-cost">100 🐾 Paws</p>
+                </div>
+                <button
+                  class="shop-buy-btn"
+                  id="buy-frame"
+                  onclick="buyCosmetic('frame', 100)"
+                >
+                  Comprar
+                </button>
+              </div>
+              <div class="shop-item">
+                <div class="shop-item-info">
+                  <h4>Tag Personalizada</h4>
+                  <p class="shop-item-cost">50 🐾 Paws</p>
+                </div>
+                <button
+                  class="shop-buy-btn"
+                  id="buy-tag"
+                  onclick="buyCosmetic('tag', 50)"
+                >
+                  Comprar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profile-screen" class="hidden">
+          <button
+            class="nav-btn"
+            onclick="showScreen('home')"
+            style="margin-bottom: 20px"
+          >
+            ← Voltar
+          </button>
+
+          <div class="profile-section">
+            <h3>⚙️ Configurações</h3>
+            <div class="setting-item">
+              <label>Vibração</label>
+              <div
+                class="toggle"
+                id="toggle-vibration"
+                onclick="toggleSetting('vibration')"
+              ></div>
+            </div>
+            <div class="setting-item">
+              <label>Sons</label>
+              <div
+                class="toggle"
+                id="toggle-sound"
+                onclick="toggleSetting('sound')"
+              ></div>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h3>ℹ️ Informações</h3>
+            <div class="detail-stats">
+              <div class="detail-stat">
+                <label>Versão:</label>
+                <value>1.0.0 MVP</value>
+              </div>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h3>⚠️ Zona de Perigo</h3>
+            <button class="danger-btn" onclick="resetProgress()">
+              Resetar Progresso
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pull Result Modal -->
+    <div class="modal" id="result-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>🎉 Resultado!</h2>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="pull-results" id="pull-results">
+          <!-- Results will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Cat Detail Modal -->
+    <div class="modal" id="detail-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Detalhes do Gato</h2>
+          <button class="modal-close" onclick="closeDetailModal()">×</button>
+        </div>
+        <div class="cat-detail" id="cat-detail">
+          <!-- Cat details will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // ============ DATA ============
+      const BREEDS = {
+        common: [
+          { name: 'Domestic Shorthair', emoji: '🐱' },
+          { name: 'Siamese', emoji: '🐈' },
+          { name: 'Persian', emoji: '😺' }
+        ],
+        rare: [
+          { name: 'British Shorthair', emoji: '😸' },
+          { name: 'Ragdoll', emoji: '😻' },
+          { name: 'Scottish Fold', emoji: '🐱' }
+        ],
+        epic: [
+          { name: 'Maine Coon', emoji: '😺' },
+          { name: 'Bengal', emoji: '🐅' },
+          { name: 'Russian Blue', emoji: '😼' }
+        ],
+        legendary: [
+          { name: 'Sphynx', emoji: '👽' },
+          { name: 'Savannah', emoji: '🐆' },
+          { name: 'Norwegian Forest Cat', emoji: '🦁' }
+        ]
+      }
+
+      const VARIANTS = [
+        'Pelagem Laranja',
+        'Pelagem Preta',
+        'Pelagem Branca',
+        'Pelagem Cinza',
+        'Olhos Azuis',
+        'Olhos Verdes',
+        'Olhos Dourados',
+        'Pelagem Tigrada',
+        'Pelagem Malhada',
+        'Pelagem Tricolor'
+      ]
+
+      const RARITY_RATES = {
+        common: 0.7,
+        rare: 0.2,
+        epic: 0.09,
+        legendary: 0.01
+      }
+
+      const DUPLICATE_PAWS = {
+        common: 5,
+        rare: 15,
+        epic: 40,
+        legendary: 120
+      }
+
+      const ECONOMY = {
+        startingFish: 2000,
+        pullCost: 200,
+        pull10Cost: 1800,
+        dailyReward: 500
+      }
+
+      // ============ STATE ============
+      let gameState = {
+        wallet: { fish: ECONOMY.startingFish, paws: 0 },
+        collection: [],
+        favorites: [],
+        history: [],
+        pityCounter: 0,
+        lastDailyClaim: null,
+        settings: { vibration: true, sound: true },
+        newCats: []
+      }
+
+      // ============ UTILITIES ============
+      function generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2)
+      }
+
+      function randomElement(array) {
+        return array[Math.floor(Math.random() * array.length)]
+      }
+
+      function getBeamColorForResults(results) {
+        const rarities = results.map(r => r.rarity)
+        if (rarities.includes('legendary'))
+          return 'linear-gradient(180deg, rgba(251,191,36,0.9), rgba(250,204,21,0.1))'
+        if (rarities.includes('epic'))
+          return 'linear-gradient(180deg, rgba(167,139,250,0.9), rgba(196,181,253,0.1))'
+        if (rarities.includes('rare'))
+          return 'linear-gradient(180deg, rgba(96,165,250,0.9), rgba(147,197,253,0.1))'
+        return 'linear-gradient(180deg, rgba(148,163,184,0.9), rgba(226,232,240,0.1))'
+      }
+
+      function rollRarity(isPityTriggered = false) {
+        if (isPityTriggered) return 'legendary'
+
+        const roll = Math.random()
+        if (roll < RARITY_RATES.legendary) return 'legendary'
+        if (roll < RARITY_RATES.legendary + RARITY_RATES.epic) return 'epic'
+        if (
+          roll <
+          RARITY_RATES.legendary + RARITY_RATES.epic + RARITY_RATES.rare
+        )
+          return 'rare'
+        return 'common'
+      }
+
+      function pickBreed(rarity) {
+        return randomElement(BREEDS[rarity])
+      }
+
+      function rollSingle() {
+        gameState.pityCounter++
+        const isPity = gameState.pityCounter >= 50
+        const rarity = rollRarity(isPity)
+
+        if (rarity === 'legendary') {
+          gameState.pityCounter = 0
+        }
+
+        const breed = pickBreed(rarity)
+        const variant = randomElement(VARIANTS)
+
+        const cat = {
+          id: generateId(),
+          breed: breed.name,
+          emoji: breed.emoji,
+          rarity,
+          variant,
+          obtainedAt: Date.now(),
+          duplicateCount: 0,
+          level: 1
+        }
+
+        return cat
+      }
+
+      function rollTen() {
+        const results = []
+        let hasRareOrBetter = false
+
+        for (let i = 0; i < 10; i++) {
+          const cat = rollSingle()
+          results.push(cat)
+          if (cat.rarity !== 'common') {
+            hasRareOrBetter = true
+          }
+        }
+
+        // Guarantee at least 1 rare or better
+        if (!hasRareOrBetter) {
+          const guaranteedRarity =
+            Math.random() < 0.5 ? 'rare' : Math.random() < 0.8 ? 'rare' : 'epic'
+          const breed = pickBreed(guaranteedRarity)
+          results[9] = {
+            ...results[9],
+            rarity: guaranteedRarity,
+            breed: breed.name,
+            emoji: breed.emoji
+          }
+        }
+
+        return results
+      }
+
+      function processCat(cat) {
+        // Check for duplicates
+        const existing = gameState.collection.find(
+          c =>
+            c.breed === cat.breed &&
+            c.rarity === cat.rarity &&
+            c.variant === cat.variant
+        )
+
+        if (existing) {
+          existing.duplicateCount++
+          gameState.wallet.paws += DUPLICATE_PAWS[cat.rarity]
+          return { isDuplicate: true, paws: DUPLICATE_PAWS[cat.rarity] }
+        } else {
+          gameState.collection.push(cat)
+          gameState.newCats.push(cat.id)
+          return { isDuplicate: false }
+        }
+      }
+
+      // ============ STORAGE ============
+      function saveGame() {
+        localStorage.setItem('catGachaState', JSON.stringify(gameState))
+      }
+
+      function loadGame() {
+        const saved = localStorage.getItem('catGachaState')
+        if (saved) {
+          gameState = JSON.parse(saved)
+        }
+      }
+
+      // ============ UI UPDATES ============
+      function updateCurrency() {
+        document.getElementById('fish-count').textContent =
+          gameState.wallet.fish
+        document.getElementById('paws-count').textContent =
+          gameState.wallet.paws
+        document.getElementById('total-cats').textContent =
+          gameState.collection.length
+        document.getElementById('total-pulls').textContent =
+          gameState.history.length
+        document.getElementById(
+          'pity-display'
+        ).textContent = `${gameState.pityCounter}/50`
+      }
+
+      function updateDailyReward() {
+        const btn = document.getElementById('claim-daily')
+        const now = Date.now()
+        const lastClaim = gameState.lastDailyClaim || 0
+        const hoursSince = (now - lastClaim) / (1000 * 60 * 60)
+
+        if (hoursSince >= 24) {
+          btn.disabled = false
+          btn.textContent = 'Coletar'
+        } else {
+          btn.disabled = true
+          const hoursLeft = Math.ceil(24 - hoursSince)
+          btn.textContent = `Disponível em ${hoursLeft}h`
+        }
+      }
+
+      function claimDaily() {
+        gameState.wallet.fish += ECONOMY.dailyReward
+        gameState.lastDailyClaim = Date.now()
+        updateCurrency()
+        updateDailyReward()
+        saveGame()
+        alert('🎁 +500 Fish coletados!')
+      }
+
+      function showScreen(screenName) {
+        const screens = ['home', 'gacha', 'collection', 'shop', 'profile']
+        screens.forEach(s => {
+          document.getElementById(`${s}-screen`).classList.add('hidden')
+        })
+        document
+          .getElementById(`${screenName}-screen`)
+          .classList.remove('hidden')
+
+        if (screenName === 'collection') {
+          renderCollection()
+        } else if (screenName === 'gacha') {
+          renderHistory()
+        }
+      }
+
+      function doPull(count) {
+        const cost = count === 1 ? ECONOMY.pullCost : ECONOMY.pull10Cost
+
+        if (gameState.wallet.fish < cost) {
+          alert('🐟 Fish insuficientes!')
+          return
+        }
+
+        // Debita Fish
+        gameState.wallet.fish -= cost
+        updateCurrency()
+
+        // Efeito visual na caixa
+        const gachaBox = document.querySelector('.gacha-box')
+        const beamEl = document.getElementById('pull-beam')
+        gachaBox.classList.add('shaking')
+
+        // Calcula resultados já aqui, mas só revela depois da animação
+        const rawResults = count === 1 ? [rollSingle()] : rollTen()
+        const processedResults = rawResults.map(cat => {
+          const result = processCat(cat)
+          return { ...cat, ...result }
+        })
+
+        // Define cor do feixe pela raridade mais alta
+        const beamGradient = getBeamColorForResults(processedResults)
+        beamEl.style.background = beamGradient
+
+        // Pequena timeline:
+        // 0ms–500ms: shake
+        // 300ms: feixe começa
+        // 700ms+: abre modal com reveal sequencial
+        setTimeout(() => {
+          gachaBox.classList.add('beaming')
+        }, 300)
+
+        setTimeout(() => {
+          gachaBox.classList.remove('shaking')
+          gachaBox.classList.remove('beaming')
+
+          // Processa coleções e histórico
+          gameState.history.unshift({
+            timestamp: Date.now(),
+            count,
+            results: processedResults.map(r => ({
+              breed: r.breed,
+              rarity: r.rarity
+            }))
+          })
+          gameState.history = gameState.history.slice(0, 20)
+
+          updateCurrency()
+          saveGame()
+          renderHistory()
+
+          // Exibe resultados com animação de reveal
+          showPullResults(processedResults, count)
+        }, 700)
+      }
+
+      function showPullResults(results, count) {
+        const modal = document.getElementById('result-modal')
+        const container = document.getElementById('pull-results')
+
+        // Primeiro renderiza todos escondidos
+        container.innerHTML = results
+          .map(
+            (cat, index) => `
+                        <div class="cat-card ${
+                          cat.rarity
+                        } pull-card-hidden" data-index="${index}">
+                            <div class="cat-placeholder">${cat.emoji}</div>
+                            <h4>${cat.breed}</h4>
+                            <div class="variant">${cat.variant}</div>
+                            <span class="rarity-badge ${cat.rarity}">${
+              cat.rarity
+            }</span>
+                            ${
+                              cat.isDuplicate
+                                ? `<p style="margin-top: 8px; font-size: 12px; color: var(--color-secondary);">+${cat.paws} 🐾 Paws</p>`
+                                : '<p style="margin-top: 8px; font-size: 12px; color: #22c55e;">✨ NOVO!</p>'
+                            }
+                        </div>
+                    `
+          )
+          .join('')
+
+        modal.classList.add('active')
+
+        // Revela em sequência (mais rápido no 1x)
+        const cards = Array.from(container.querySelectorAll('.cat-card'))
+        const baseDelay = count === 1 ? 0 : 80
+
+        cards.forEach((card, i) => {
+          setTimeout(() => {
+            card.classList.remove('pull-card-hidden')
+            card.classList.add('pull-card-reveal')
+          }, baseDelay * i)
+        })
+      }
+
+      function closeModal() {
+        document.getElementById('result-modal').classList.remove('active')
+      }
+
+      function renderCollection(filter = 'all') {
+        const grid = document.getElementById('collection-grid')
+        const empty = document.getElementById('empty-collection')
+
+        let filtered = [...gameState.collection]
+
+        if (filter === 'favorites') {
+          filtered = filtered.filter(c => gameState.favorites.includes(c.id))
+        } else if (filter !== 'all') {
+          filtered = filtered.filter(c => c.rarity === filter)
+        }
+
+        if (filtered.length === 0) {
+          grid.classList.add('hidden')
+          empty.classList.remove('hidden')
+          return
+        }
+
+        grid.classList.remove('hidden')
+        empty.classList.add('hidden')
+
+        grid.innerHTML = filtered
+          .map(
+            cat => `
+              <div class="cat-card ${cat.rarity} ${
+              gameState.newCats.includes(cat.id) ? 'new' : ''
+            }" onclick="showCatDetail('${cat.id}')">
+                  <button class="favorite-btn" onclick="toggleFavorite(event, '${
+                    cat.id
+                  }')">
+                      ${gameState.favorites.includes(cat.id) ? '❤️' : '🤍'}
+                  </button>
+                  <div class="cat-placeholder">${cat.emoji}</div>
+                  <h4>${cat.breed}</h4>
+                  <div class="variant">${cat.variant}</div>
+                  <span class="rarity-badge ${cat.rarity}">${cat.rarity}</span>
+                  ${
+                    cat.duplicateCount > 0
+                      ? `<p style="margin-top: 4px; font-size: 11px; color: var(--color-text-light);">×${
+                          cat.duplicateCount + 1
+                        }</p>`
+                      : ''
+                  }
+              </div>
+          `
+          )
+          .join('')
+      }
+
+      function toggleFavorite(event, catId) {
+        event.stopPropagation()
+        const index = gameState.favorites.indexOf(catId)
+        if (index > -1) {
+          gameState.favorites.splice(index, 1)
+        } else {
+          gameState.favorites.push(catId)
+        }
+        saveGame()
+        renderCollection(getCurrentFilter())
+      }
+
+      function getCurrentFilter() {
+        const active = document.querySelector('.filter-btn.active')
+        return active ? active.dataset.filter : 'all'
+      }
+
+      function showCatDetail(catId) {
+        const cat = gameState.collection.find(c => c.id === catId)
+        if (!cat) return
+
+        // Mark as viewed
+        const newIndex = gameState.newCats.indexOf(catId)
+        if (newIndex > -1) {
+          gameState.newCats.splice(newIndex, 1)
+          saveGame()
+        }
+
+        const modal = document.getElementById('detail-modal')
+        const container = document.getElementById('cat-detail')
+
+        const date = new Date(cat.obtainedAt).toLocaleDateString('pt-BR')
+
+        container.innerHTML = `
+              <div class="cat-placeholder" style="background: ${getRarityGradient(
+                cat.rarity
+              )}">
+                  ${cat.emoji}
+              </div>
+              <h2>${cat.breed}</h2>
+              <span class="rarity-badge ${
+                cat.rarity
+              }" style="font-size: 14px;">${cat.rarity}</span>
+              <div class="detail-stats">
+                  <div class="detail-stat">
+                      <label>Variação:</label>
+                      <value>${cat.variant}</value>
+                  </div>
+                  <div class="detail-stat">
+                      <label>Obtido em:</label>
+                      <value>${date}</value>
+                  </div>
+                  <div class="detail-stat">
+                      <label>Duplicatas:</label>
+                      <value>×${cat.duplicateCount + 1}</value>
+                  </div>
+                  <div class="detail-stat">
+                      <label>Nível:</label>
+                      <value>${cat.level}</value>
+                  </div>
+              </div>
+          `
+
+        modal.classList.add('active')
+      }
+
+      function closeDetailModal() {
+        document.getElementById('detail-modal').classList.remove('active')
+        renderCollection(getCurrentFilter())
+      }
+
+      function getRarityGradient(rarity) {
+        const gradients = {
+          common: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)',
+          rare: 'linear-gradient(135deg, #dbeafe, #93c5fd)',
+          epic: 'linear-gradient(135deg, #ede9fe, #c4b5fd)',
+          legendary: 'linear-gradient(135deg, #fef3c7, #fde047)'
+        }
+        return gradients[rarity]
+      }
+
+      function renderHistory() {
+        const container = document.getElementById('history-list')
+        if (gameState.history.length === 0) {
+          container.innerHTML =
+            '<h4 style="margin-bottom: 12px;">📜 Histórico (últimos 20)</h4><p style="color: var(--color-text-light);">Nenhum pull realizado ainda.</p>'
+          return
+        }
+
+        const historyHTML = gameState.history
+          .map(entry => {
+            const date = new Date(entry.timestamp)
+            const time = date.toLocaleTimeString('pt-BR', {
+              hour: '2-digit',
+              minute: '2-digit'
+            })
+            const legendaries = entry.results.filter(
+              r => r.rarity === 'legendary'
+            ).length
+            const epics = entry.results.filter(r => r.rarity === 'epic').length
+
+            return `
+                  <div class="history-item">
+                      <div class="history-item-info">
+                          <strong>Pull ${entry.count}x</strong>
+                          ${
+                            legendaries > 0
+                              ? `<span style="color: var(--color-legendary);">⭐ ${legendaries} Legendary</span>`
+                              : ''
+                          }
+                          ${
+                            epics > 0
+                              ? `<span style="color: var(--color-epic);">💜 ${epics} Epic</span>`
+                              : ''
+                          }
+                          <div class="history-item-time">${time}</div>
+                      </div>
+                  </div>
+              `
+          })
+          .join('')
+
+        container.innerHTML =
+          '<h4 style="margin-bottom: 12px;">📜 Histórico (últimos 20)</h4>' +
+          historyHTML
+      }
+
+      function buyCosmetic(type, cost) {
+        if (gameState.wallet.paws < cost) {
+          alert('🐾 Paws insuficientes!')
+          return
+        }
+
+        gameState.wallet.paws -= cost
+        updateCurrency()
+        saveGame()
+        alert(
+          `✅ ${
+            type === 'frame' ? 'Moldura Dourada' : 'Tag Personalizada'
+          } comprada! (Recurso visual em desenvolvimento)`
+        )
+      }
+
+      function toggleSetting(setting) {
+        gameState.settings[setting] = !gameState.settings[setting]
+        document.getElementById(`toggle-${setting}`).classList.toggle('active')
+        saveGame()
+      }
+
+      function resetProgress() {
+        if (confirm('⚠️ Tem certeza? Todo o progresso será perdido!')) {
+          if (confirm('⚠️ ÚLTIMA CHANCE! Confirmar reset?')) {
+            localStorage.removeItem('catGachaState')
+            location.reload()
+          }
+        }
+      }
+
+      // ============ EVENT LISTENERS ============
+      document
+        .getElementById('claim-daily')
+        .addEventListener('click', claimDaily)
+      document
+        .getElementById('pull-1x')
+        .addEventListener('click', () => doPull(1))
+      document
+        .getElementById('pull-10x')
+        .addEventListener('click', () => doPull(10))
+
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          document
+            .querySelectorAll('.filter-btn')
+            .forEach(b => b.classList.remove('active'))
+          e.target.classList.add('active')
+          renderCollection(e.target.dataset.filter)
+        })
+      })
+
+      // ============ INITIALIZATION ============
+      function init() {
+        loadGame()
+        updateCurrency()
+        updateDailyReward()
+
+        // Update settings toggles
+        if (gameState.settings.vibration) {
+          document.getElementById('toggle-vibration').classList.add('active')
+        }
+        if (gameState.settings.sound) {
+          document.getElementById('toggle-sound').classList.add('active')
+        }
+
+        // Check daily reward every minute
+        setInterval(updateDailyReward, 60000)
+      }
+
+      init()
+      // ============ PWA INSTALLATION ============
+        let deferredPrompt;
+        const installBtn = document.createElement('button');
+        installBtn.className = 'nav-btn';
+        installBtn.innerHTML = '📲 Instalar App';
+        installBtn.style.display = 'none';
+        installBtn.style.marginBottom = '20px';
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+
+        installBtn.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            
+            if (outcome === 'accepted') {
+                console.log('PWA instalado!');
+            }
+            
+            deferredPrompt = null;
+            installBtn.style.display = 'none';
+        });
+
+        // Check if already installed
+        window.addEventListener('appinstalled', () => {
+            console.log('PWA foi instalado');
+            installBtn.style.display = 'none';
+        });
+
+        // Add install button to home screen
+        const homeScreen = document.getElementById('home-screen');
+        homeScreen.insertBefore(installBtn, homeScreen.querySelector('.nav-buttons'));
+
+        // ============ SERVICE WORKER REGISTRATION ============
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('Service Worker registrado:', reg.scope))
+                    .catch(err => console.log('Erro ao registrar Service Worker:', err));
+            });
+        }
+
+    </script>
+  </body>
+</html>
